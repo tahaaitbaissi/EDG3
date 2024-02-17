@@ -9,6 +9,7 @@
 #define ED_QUIT_TIMES 3
 #define HL_HIGHLIGHT_NUMBERS (1<<0)
 #define HL_HIGHLIGHT_STRINGS (1<<1)
+#define FILES_INIT {NULL, 0}
 
 enum editorKey {
     BACKSPACE = 127,
@@ -54,9 +55,15 @@ struct editorSyntax {
     int flags;
 };
 
+typedef struct {
+    char **items;
+    int len;
+} Files;
+
 struct editorConfig {
     int cx, cy;
     int rx;
+    int fy;
     int rowoff;
     int coloff;
     int screenrows;
@@ -67,6 +74,8 @@ struct editorConfig {
     char *filename;
     char statusmsg[80];
     time_t statusmsg_time;
+    Files files;
+    int file_browser;
     struct editorSyntax *syntax;
     struct termios orig_termios;
 };

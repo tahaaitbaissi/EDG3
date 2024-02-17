@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "editor.h"
 #include "terminal.h"
@@ -20,7 +21,11 @@ void editorProcessKeypress(void)
     int c = editorReadKey();
     switch (c) {
         case '\r':
-            editorInsertNewLine();
+            if (E->file_browser) {
+                editorOpen(E->files.items[E->fy]);
+            } else {
+                editorInsertNewLine();
+            }
             break;
         case CTRL_KEY('q'):
             if (E->dirty && quit_times > 0) {
@@ -28,6 +33,7 @@ void editorProcessKeypress(void)
                 quit_times--;
                 return;
             }
+            write(STDOUT_FILENO, "\x1b[?25h", 6);
             write(STDOUT_FILENO, "\x1b[2J", 4);
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
@@ -43,6 +49,10 @@ void editorProcessKeypress(void)
         case END_KEY:
             if (E->cy < E->numrows)
                 E->cx = E->row[E->cy].size; 
+            break;
+
+        case CTRL_KEY('n'):
+            E->file_browser = E->file_browser ? 0 : 1;
             break;
 
         case CTRL_KEY('f'):
@@ -76,7 +86,13 @@ void editorProcessKeypress(void)
         case ARROW_RIGHT:
         case ARROW_LEFT:
         case ARROW_DOWN:
-            editorMoveCursor(c);
+            if (E->file_browser)
+            {
+                // TODO : select files
+                editorSelectfile(c);
+            } else {
+                editorMoveCursor(c);
+            }
             break;
         
         case CTRL_KEY('l'):
@@ -163,5 +179,20 @@ char *editorPrompt(char *prompt, void (*callback)(char *, int))
         }
 
         if (callback) callback(buf, c);
+    }
+}
+
+void editorSelectfile(int key) 
+{
+    struct editorConfig *E = GetEditor();
+
+    switch (key) {
+        case ARROW_UP:
+            if (E->fy != 0) E->fy--;
+            break;
+
+        case ARROW_DOWN:
+            if (E->fy < E->files.len) E->fy++;
+            break;
     }
 }

@@ -4,5 +4,6 @@
 void editorProcessKeypress(void);
 void editorMoveCursor(int key);
 char *editorPrompt(char *prompt, void (*callback)(char *, int));
+void editorSelectfile(int key); 
 
 #endif
