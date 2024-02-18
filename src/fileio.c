@@ -85,10 +85,6 @@ void editorSave(void)
                 free(buf);
                 E->dirty = 0; 
                 editorSetStatusMessage("%d bytes written to disk", len);
-                E->files.items = NULL;
-                E->files.len = 0;
-                int err = read_entire_dir(".", &E->files);
-                if (err != 0) die("read_entire_dir");
                 return;
             }
         }
@@ -123,6 +119,8 @@ void FilesAppend(Files *files, const char *s)
 
 int read_entire_dir(const char *dir_path, Files *files)
 {
+    files->items = NULL;
+    files->len = 0;
     DIR *dir = opendir(dir_path);
     if (dir == NULL) {
         return -1;

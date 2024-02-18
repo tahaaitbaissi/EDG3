@@ -11,7 +11,6 @@ struct editorConfig *GetEditor(void)
 
 void initEditor(void)
 {
-    int err;
     E.cx = 0;
     E.cy = 0;
     E.rx = 0;
@@ -26,8 +25,8 @@ void initEditor(void)
     E.dirty = 0;
     E.syntax = NULL;
     E.file_browser = 0;
-    err = read_entire_dir(".", &E.files);
-    if (err != 0) die("read_entire_dir");
+    E.files.items = NULL;
+    E.files.len = 0;
 
 
     if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");

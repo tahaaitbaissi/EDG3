@@ -12,11 +12,17 @@
 #include "output.h"
 #include "fileio.h"
 
+int str_cmp (const void *a, const void *b) {
+    const char *aa = *(const char **) a;
+    const char *bb = *(const char **) b;
+    return strcmp(aa, bb);
+}
 
 void editorProcessKeypress(void)
 {
     struct editorConfig *E = GetEditor();
     static int quit_times = ED_QUIT_TIMES;
+    int err;
 
     int c = editorReadKey();
     switch (c) {
@@ -52,7 +58,10 @@ void editorProcessKeypress(void)
             break;
 
         case CTRL_KEY('n'):
-            E->file_browser = E->file_browser ? 0 : 1;
+            err = read_entire_dir(".", &E->files);
+            if (err != 0) die("read_entire_dir");
+            qsort(E->files.items, E->files.len, sizeof(*E->files.items), str_cmp);
+            E->file_browser = !E->file_browser;
             break;
 
         case CTRL_KEY('f'):
