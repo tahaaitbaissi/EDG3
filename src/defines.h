@@ -56,7 +56,13 @@ struct editorSyntax {
 };
 
 typedef struct {
-    char **items;
+    char *name;
+    int len;
+    int isdir;
+} File;
+
+typedef struct {
+    File *items;
     int len;
 } Files;
 

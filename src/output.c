@@ -6,6 +6,8 @@
 #include <ctype.h>
 
 #include "editor.h"
+#include "terminal.h"
+#include "fileio.h"
 #include "defines.h"
 #include "syntax.h"
 #include "row_op.h"
@@ -68,10 +70,12 @@ void editorDrawRows(struct abuf *ab)
         if (E->file_browser && y < E->files.len) {
             // TODO: Render file browser
             char buf[30];
-            int buflen = snprintf(buf, sizeof(buf), "%s", E->files.items[y]);
+            int buflen = snprintf(buf, sizeof(buf), "%s", E->files.items[y].name);
             abAppend(ab, "\x1b[?25l", 6);
             if (y == E->fy)
                 abAppend(ab, "\x1b[7m", 4);
+            if (E->files.items[y].isdir)
+                abAppend(ab, "\x1b[36m", 5);
             abAppend(ab, buf, buflen);
             abAppend(ab, "\x1b[m", 3);
         } else {
@@ -178,4 +182,13 @@ void editorScroll(void)
     if (E->rx >= E->coloff + E->screencols) {
         E->coloff = E->rx - E->screencols + 1;
     }
+}
+
+void editorFileBrowser(void)
+{
+    int err;
+    struct editorConfig *E = GetEditor();
+    err = read_entire_dir(".", &E->files);
+    if (err != 0) die("read_entire_dir");
+    E->file_browser = !E->file_browser;
 }

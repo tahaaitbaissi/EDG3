@@ -10,5 +10,6 @@ void editorScroll(void);
 void editorDrawStatusBar(struct abuf *ab);
 void editorSetStatusMessage(const char *fmt, ...);
 void editorDrawMessageBar(struct abuf *ab);
+void editorFileBrowser(void);
 
 #endif

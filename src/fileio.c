@@ -16,6 +16,8 @@
 #include "input.h"
 #include "output.h"
 
+#define _BSD_SOURCE
+
 void editorOpen(char *filename)
 {
     struct editorConfig *E = GetEditor();
@@ -102,13 +104,14 @@ void FilesAppend(Files *files, const char *s)
     //     new = realloc(files->items, (files->len + 1) * sizeof(char *));
     // }
 
-    char **new;
-    new = realloc(files->items, (files->len + 1) * sizeof(char *));
+    File *new;
+    new = realloc(files->items, (files->len + 1) * sizeof(File));
     if (new == NULL) return;
     
-    new[files->len] = strdup(s);
+    new[files->len].name = strdup(s);
+    new[files->len].len = strlen(s);
 
-    if (new[files->len] == NULL) {
+    if (new[files->len].name == NULL) {
         free(new);
         return;
     }
@@ -117,8 +120,15 @@ void FilesAppend(Files *files, const char *s)
     files->len++;
 }
 
+int file_cmp (const void *a, const void *b) {
+    const File *aa = (const File *) a;
+    const File *bb = (const File *) b;
+    return strcmp(aa->name, bb->name);
+}
+
 int read_entire_dir(const char *dir_path, Files *files)
 {
+    int num_dirs = 0;
     files->items = NULL;
     files->len = 0;
     DIR *dir = opendir(dir_path);
@@ -130,9 +140,46 @@ int read_entire_dir(const char *dir_path, Files *files)
     struct dirent *ent = readdir(dir);
     while (ent != NULL) {
         FilesAppend(files, ent->d_name);
+        if (ent->d_type == DT_DIR) {
+            files->items[files->len - 1].isdir = 1;
+            num_dirs++;
+        } else {
+            files->items[files->len - 1].isdir = 0;
+        }
         ent = readdir(dir);
     }
+
     closedir(dir);
+
+    File dirs[num_dirs];
+    File rst[files->len - num_dirs];
+    int j = 0, k = 0;
+    for (int i = 0; i < files->len; i++) {
+        if (files->items[i].isdir)
+        {
+            dirs[j] = files->items[i];
+            j++;
+        } else {
+            rst[k] = files->items[i];
+            k++;
+        }
+    }
+
+    qsort(dirs, num_dirs, sizeof(*dirs), file_cmp);
+    qsort(rst, files->len - num_dirs, sizeof(*rst), file_cmp);
+
+    k = 0;
+    j = 0;
+
+    for (int i = 0; i < files->len; i++) {
+        if (j < num_dirs) {
+            files->items[i] = dirs[j];
+            j++; 
+        } else {
+            files->items[i] = rst[k];
+            k++;            
+        }
+    }
 
     if (errno != 0) {
         return -1;
