@@ -20,6 +20,7 @@ void initEditor(void)
     E.coloff = 0;
     E.row = NULL;
     E.filename = NULL;
+    E.subdirs = NULL;
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0;
     E.dirty = 0;

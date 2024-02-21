@@ -78,6 +78,7 @@ struct editorConfig {
     int numrows;
     int dirty;
     char *filename;
+    char *subdirs;
     char statusmsg[80];
     time_t statusmsg_time;
     Files files;

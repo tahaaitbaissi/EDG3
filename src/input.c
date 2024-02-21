@@ -1,6 +1,7 @@
 #include "input.h"
 
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
@@ -16,12 +17,31 @@ void editorProcessKeypress(void)
 {
     struct editorConfig *E = GetEditor();
     static int quit_times = ED_QUIT_TIMES;
+    int err, len, len_sub;
 
     int c = editorReadKey();
     switch (c) {
         case '\r':
             if (E->file_browser) {
-                editorOpen(E->files.items[E->fy].name);
+                if (E->files.items[E->fy].isdir) {
+                    len = strlen(E->files.items[E->fy].name);
+                    if (E->subdirs == NULL) {
+                        E->subdirs = malloc(len + 2);
+                        memcpy(E->subdirs, E->files.items[E->fy].name, len);
+                        memcpy(E->subdirs + len, "/", 1);
+                        memcpy(E->subdirs + len + 1, "\0", 1);
+                    } else {
+                        len_sub = strlen(E->subdirs);
+                        E->subdirs = realloc(E->subdirs, len_sub + len + 1);
+                        memcpy(E->subdirs + len_sub, E->files.items[E->fy].name, len);
+                        memcpy(E->subdirs + len_sub + len , "/", 1);
+                        memcpy(E->subdirs + len_sub + len + 1, "\0", 1);
+                    }
+                    err = read_entire_dir(E->subdirs, &E->files);
+                    if (err != 0) die("read_entire_dir");
+                } else {
+                    editorOpen(E->files.items[E->fy].name);
+                }
             } else {
                 editorInsertNewLine();
             }

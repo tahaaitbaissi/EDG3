@@ -67,8 +67,13 @@ void editorDrawRows(struct abuf *ab)
     int y;
     for (y = 0; y < E->screenrows; y++) {
         int filerow = y + E->rowoff;
-        if (E->file_browser && y < E->files.len) {
-            // TODO: Render file browser
+        if (E->file_browser) {
+            // TODO: Scrolling in filebrowser
+            if (y >= E->files.len) {
+                abAppend(ab, "\x1b[K", 3);
+                abAppend(ab, "\r\n", 2);
+                continue;
+            }
             char buf[30];
             int buflen = snprintf(buf, sizeof(buf), "%s", E->files.items[y].name);
             abAppend(ab, "\x1b[?25l", 6);
@@ -188,6 +193,7 @@ void editorFileBrowser(void)
 {
     int err;
     struct editorConfig *E = GetEditor();
+    E->subdirs = NULL;
     err = read_entire_dir(".", &E->files);
     if (err != 0) die("read_entire_dir");
     E->file_browser = !E->file_browser;

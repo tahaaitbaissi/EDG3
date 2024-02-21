@@ -22,12 +22,21 @@ void editorOpen(char *filename)
 {
     struct editorConfig *E = GetEditor();
     free(E->filename);
-    E->filename = strdup(filename);
+    int len = strlen(filename);
+    if (E->subdirs != NULL) {
+        int len_sub = strlen(E->subdirs);
+        E->filename = malloc(len_sub + len + 1);
+        memcpy(E->filename, E->subdirs, len_sub);
+        memcpy(E->filename + len_sub, filename, len);
+        E->filename[len + len_sub] = '\0';
+    } else {
+        E->filename = strdup(filename);
+    }
     E->numrows = 0;
 
     editorSelectSyntaxHighlight();
 
-    FILE *fp = fopen(filename, "r");
+    FILE *fp = fopen(E->filename, "r");
     if (!fp) die("fopen");
 
     char *line = NULL;
