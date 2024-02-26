@@ -39,6 +39,7 @@ void editorProcessKeypress(void)
                     }
                     err = read_entire_dir(E->subdirs, &E->files);
                     if (err != 0) die("read_entire_dir");
+                    E->fy = 0;
                 } else {
                     editorOpen(E->files.items[E->fy].name);
                 }
@@ -71,7 +72,8 @@ void editorProcessKeypress(void)
             break;
 
         case CTRL_KEY('n'):
-            editorFileBrowser();
+   			E->fy = 0;         
+			editorFileBrowser();
             break;
 
         case CTRL_KEY('f'):

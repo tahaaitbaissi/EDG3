@@ -15,7 +15,11 @@
 void editorRefreshScreen(void)
 {
     struct editorConfig *E = GetEditor();
-    editorScroll();
+    if (!E->file_browser) {
+        editorScroll();
+    } else {
+        editorFileBrowserScroll();
+    }
 
     struct abuf ab = ABUF_INIT;
     
@@ -69,17 +73,17 @@ void editorDrawRows(struct abuf *ab)
         int filerow = y + E->rowoff;
         if (E->file_browser) {
             // TODO: Scrolling in filebrowser
-            if (y >= E->files.len) {
+            if (filerow >= E->files.len) {
                 abAppend(ab, "\x1b[K", 3);
                 abAppend(ab, "\r\n", 2);
                 continue;
             }
             char buf[30];
-            int buflen = snprintf(buf, sizeof(buf), "%s", E->files.items[y].name);
+            int buflen = snprintf(buf, sizeof(buf), "%s", E->files.items[filerow].name);
             abAppend(ab, "\x1b[?25l", 6);
-            if (y == E->fy)
+            if (filerow == E->fy)
                 abAppend(ab, "\x1b[7m", 4);
-            if (E->files.items[y].isdir)
+            if (E->files.items[filerow].isdir)
                 abAppend(ab, "\x1b[36m", 5);
             abAppend(ab, buf, buflen);
             abAppend(ab, "\x1b[m", 3);
@@ -189,6 +193,18 @@ void editorScroll(void)
     }
 }
 
+void editorFileBrowserScroll(void)
+{
+    struct editorConfig *E = GetEditor();
+    
+    if (E->fy < E->rowoff) {
+        E->rowoff = E->fy;
+    }
+    if (E->fy >= E->rowoff + E->screenrows) {
+        E->rowoff = E->fy - E->screenrows + 1;
+    }
+    
+}
 void editorFileBrowser(void)
 {
     int err;

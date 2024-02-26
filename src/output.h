@@ -7,6 +7,7 @@
 void editorRefreshScreen(void);
 void editorDrawRows(struct abuf *ab);
 void editorScroll(void);
+void editorFileBrowserScroll(void);
 void editorDrawStatusBar(struct abuf *ab);
 void editorSetStatusMessage(const char *fmt, ...);
 void editorDrawMessageBar(struct abuf *ab);
